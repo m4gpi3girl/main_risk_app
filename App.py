@@ -95,23 +95,28 @@ new.drop_duplicates(subset=['Investment Name'], inplace=True)
 
 # sort out the data
 #st.write(list(new))
-new["Site Expected or Actual Start Date (for Multi-Site Builds this reflects the earliest date)"] = new["Site Expected or Actual Start Date (for Multi-Site Builds this reflects the earliest date)"].astype(str)
 
-# filters
+new.to_excel("matcheddata.xlsx")
+new["Site Expected or Actual Start Date (for Multi-Site Builds this reflects the earliest date)"] = pd.to_datetime(new["Site Expected or Actual Start Date (for Multi-Site Builds this reflects the earliest date)"], format='%d/%m/%Y')
+
+# Calculate default start and end dates
+default_start_date = new["Site Expected or Actual Start Date (for Multi-Site Builds this reflects the earliest date)"].min()
+default_end_date = new["Site Expected or Actual Start Date (for Multi-Site Builds this reflects the earliest date)"].max()
+
+
+
+# filters in sidebar
 min_grant, max_grant = new['Grant Amount'].min(), new['Grant Amount'].max()
-selected_min_grant, selected_max_grant = st.slider('Grant Amount Range (£)', min_grant, max_grant, (min_grant, max_grant))
+selected_min_grant, selected_max_grant = st.sidebar.slider('Grant Amount Range (£)', min_grant, max_grant, (min_grant, max_grant))
 
 min_disbursed, max_disbursed = new['Disbursed Amount'].min(), new['Disbursed Amount'].max()
-selected_min_disbursed, selected_max_disbursed = st.slider('Disbursed Amount Range (£)', min_disbursed, max_disbursed, (min_disbursed, max_disbursed))
+selected_min_disbursed, selected_max_disbursed = st.sidebar.slider('Disbursed Amount Range (£)', min_disbursed, max_disbursed, (min_disbursed, max_disbursed))
 
-
-start_date = st.date_input("Date (Earliest)")
-end_date = st.date_input("Date (Latest)")
-
+start_date = st.sidebar.date_input("Date (Earliest)", value=default_start_date)
+end_date = st.sidebar.date_input("Date (Latest)", value=default_end_date)
 
 min_disbursement, max_disbursement = new['Proportion of Capital Disbursed'].min(), new['Proportion of Capital Disbursed'].max()
-selected_min_disbursement, selected_max_disbursement = st.slider('Proportion of Capital Disbursed', min_disbursement, max_disbursement, (min_disbursement, max_disbursement))
-
+selected_min_disbursement, selected_max_disbursement = st.sidebar.slider('Proportion of Capital Disbursed', min_disbursement, max_disbursement, (min_disbursement, max_disbursement))
 
 def update_map(min_grant, max_grant, min_disbursed, max_disbursed, start_date, end_date, min_disbursement, max_disbursement):
 
@@ -121,14 +126,10 @@ def update_map(min_grant, max_grant, min_disbursed, max_disbursed, start_date, e
 
     for idx, row in new.iterrows():
 
-        # Convert datetime objects to strings with assumed format
-        start_date_str = start_date.strftime('%d/%m/%Y')
-        end_date_str = end_date.strftime('%d/%m/%Y')
-
         if (min_grant <= row['Grant Amount'] <= max_grant) and \
         (min_disbursed <= row['Disbursed Amount'] <= max_disbursed) and \
         (min_disbursement <= row['Proportion of Capital Disbursed'] <= max_disbursement) and \
-        (start_date_str <= row["Site Expected or Actual Start Date (for Multi-Site Builds this reflects the earliest date)"] <= end_date_str):
+        (start_date <= pd.to_datetime(row["Site Expected or Actual Start Date (for Multi-Site Builds this reflects the earliest date)"], format='%d/%m/%Y').dt.date <= end_date):
 
             folium.Marker(location=[row['Latitude'], row['Longitude']],
                             icon=folium.Icon(color='red'),
@@ -143,7 +144,10 @@ def update_map(min_grant, max_grant, min_disbursed, max_disbursed, start_date, e
     folium_static(m)
 
 # Display the widgets and the map
-update_map(min_grant, max_grant, min_disbursed, max_disbursed, start_date, end_date, min_disbursement, max_disbursement)
+update_map(selected_min_grant, selected_max_grant, selected_min_disbursed, selected_max_disbursed, start_date, end_date, selected_min_disbursement, selected_max_disbursement)
+
+st.write(new)
+
 
 st.write(new)
 
