@@ -20,8 +20,13 @@ current issues:
 
 first next steps:
 
-- import data
-- match data w lat, lon and region from postcodes.io api
+- import data DONE
+- match data w lat, lon and region from postcodes.io api DONE
+
+new issue: five postcodes were not matched. need to investigate.
+
+
+
 - display on folium map with markers
 
 second next steps:
