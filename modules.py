@@ -45,3 +45,13 @@ def bulk_pc_lookup(postcodes):
             print(f"Error in batch: {response.status_code}")
     
     return postcode_data
+
+def get_icon_colour(risk_rating):
+    if risk_rating == "Green":
+        return "green"
+    elif risk_rating == "Red":
+        return "red"
+    elif risk_rating == "Amber":
+        return "orange"
+    else:
+        return "black"  # Default color
